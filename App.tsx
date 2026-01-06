@@ -13,7 +13,7 @@ const QUESTION_TIME = 15;
 const MATCHMAKING_TIME = 30;
 const MAX_PLAYERS = 15;
 const TRACK_LENGTH = 10000;
-const BASE_SPEED = 40; // Increased base speed to ensure movement is visible
+const BASE_SPEED = 40;
 
 const App: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>(GameState.LOBBY);
@@ -66,7 +66,6 @@ const App: React.FC = () => {
     setPlayers(prev => {
       const exists = prev.find(p => p.id === remote.id);
       if (exists) {
-        // Update existing remote player (name might have changed or heartbeat)
         return prev.map(p => p.id === remote.id ? { ...p, ...remote, isLocal: false, isBot: false } : p);
       }
       if (prev.length >= MAX_PLAYERS) return prev;
@@ -98,7 +97,7 @@ const App: React.FC = () => {
       name: playerName,
       position: 0,
       speed: BASE_SPEED,
-      lane: 0, // Temporarily 0, will be finalized
+      lane: 0,
       isLocal: true,
       isBot: false,
       isFinished: false,
@@ -111,7 +110,7 @@ const App: React.FC = () => {
 
     const heartbeat = setInterval(() => {
       if (gameStateRef.current === GameState.MATCHMAKING) {
-        multiplayer.sendHeartbeat({ ...local, name: playerName }); // Use latest playerName
+        multiplayer.sendHeartbeat({ ...local, name: playerName });
       } else {
         clearInterval(heartbeat);
       }
@@ -132,28 +131,30 @@ const App: React.FC = () => {
 
   const finalizePlayers = async () => {
     setGameState(GameState.STARTING);
+    
+    // Fetch and shuffle questions for variety
     const fetchedQs = await fetchSetTheoryQuestions();
-    setQuestions(fetchedQs);
+    const shuffledQs = [...fetchedQs].sort(() => Math.random() - 0.5);
+    setQuestions(shuffledQs);
+    setCurrentQuestionIndex(0);
 
     setPlayers(prev => {
-      // 1. Assign lanes to existing human players (sorted by ID for consistency)
       const humans = prev.filter(p => !p.isBot).sort((a, b) => a.id.localeCompare(b.id));
       const updatedHumans = humans.map((p, idx) => ({ ...p, lane: idx }));
 
-      // 2. Add bots for remaining lanes
       const currentCount = updatedHumans.length;
       const botsNeeded = MAX_PLAYERS - currentCount;
       const botPlayers: Player[] = Array.from({ length: botsNeeded }).map((_, i) => ({
         id: `bot-${i}-${Date.now()}`,
-        name: `Bot Racer ${i + 1}`,
+        name: `AI Racer ${i + 1}`,
         position: 0,
-        speed: BASE_SPEED + (Math.random() * 20),
+        speed: BASE_SPEED + (Math.random() * 15),
         lane: currentCount + i,
         isLocal: false,
         isBot: true,
         isFinished: false,
         score: 0,
-        color: `hsl(${(i * 40 + 200) % 360}, 40%, 40%)`
+        color: `hsl(${(i * 45 + 180) % 360}, 30%, 40%)`
       }));
       return [...updatedHumans, ...botPlayers];
     });
@@ -192,9 +193,8 @@ const App: React.FC = () => {
             return { ...p, speed: Math.max(BASE_SPEED, newSpeed) };
           }
           if (p.isBot && !p.isFinished) {
-            // Bots randomly change speed slightly to simulate thinking
-            const aiVariation = (Math.random() - 0.48) * 3;
-            return { ...p, speed: Math.min(Math.max(BASE_SPEED + 10, p.speed + aiVariation), 110) };
+            const aiVariation = (Math.random() - 0.47) * 4;
+            return { ...p, speed: Math.min(Math.max(BASE_SPEED + 5, p.speed + aiVariation), 120) };
           }
           return p;
         }));
@@ -229,11 +229,11 @@ const App: React.FC = () => {
       if (isCorrect) {
         return { 
           ...p, 
-          speed: Math.min(p.speed + 70, 250),
+          speed: Math.min(p.speed + 75, 260),
           score: p.score + 100 + (questionTimer * 10),
         };
       } else {
-        return { ...p, speed: Math.max(BASE_SPEED, p.speed * 0.4) }; 
+        return { ...p, speed: Math.max(BASE_SPEED, p.speed * 0.45) }; 
       }
     }));
     setCurrentQuestionIndex(prev => (prev + 1) % (questions.length || 1));
@@ -245,7 +245,7 @@ const App: React.FC = () => {
       const moveInterval = setInterval(() => {
         setPlayers(prev => prev.map(p => {
           if (p.isFinished) return p;
-          const newPos = p.position + (p.speed / 40); // Faster physics update
+          const newPos = p.position + (p.speed / 50);
           if (newPos >= TRACK_LENGTH) {
             return { ...p, position: TRACK_LENGTH, isFinished: true, speed: 0 };
           }
