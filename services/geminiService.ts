@@ -2,7 +2,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Question } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: gen-lang-client-0394460653 });
+const ai = new GoogleGenAI({ apiKey: AIzaSyAKZG2968cpUIFR9bOOjqr9YCfuD87rgcE });
 
 export async function fetchSetTheoryQuestions(): Promise<Question[]> {
   try {
