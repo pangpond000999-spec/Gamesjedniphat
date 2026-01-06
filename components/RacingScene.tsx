@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Player } from '../types';
 
 interface RacingSceneProps {
@@ -15,25 +15,55 @@ const RacingScene: React.FC<RacingSceneProps> = ({ players, trackLength, nitroAc
   const LANES = 15;
   const LANE_WIDTH = 60; 
   const ROAD_WIDTH = LANES * LANE_WIDTH;
-  const SCALE = 12; // Adjusted scale for better movement feel
+  
+  const [windowSize, setWindowSize] = useState({ 
+    width: window.innerWidth, 
+    height: window.innerHeight 
+  });
+  
+  useEffect(() => {
+    const handleResize = () => setWindowSize({ 
+      width: window.innerWidth, 
+      height: window.innerHeight 
+    });
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const isMobile = windowSize.width < 768;
+
+  // SCALE_Y is the vertical distance multiplier for the 3D space
+  const SCALE_Y = isMobile ? 8 : 12; 
+  // Base position of the player car from the bottom of the viewport
+  const PLAYER_BOTTOM_PX = isMobile ? 60 : 100;
+
+  // Calculate a scale factor to fit the 900px road into the current screen width
+  const horizontalScale = useMemo(() => {
+    const padding = 20;
+    const availableWidth = windowSize.width - padding;
+    return Math.min(1, availableWidth / ROAD_WIDTH);
+  }, [windowSize.width, ROAD_WIDTH]);
 
   return (
-    <div className="w-full h-full bg-[#0a0a0a] overflow-hidden relative flex justify-center items-center perspective-[1000px]">
+    <div className="w-full h-full bg-[#050505] overflow-hidden relative flex justify-center items-end perspective-[1200px]">
       
-      {/* Background/Ground */}
-      <div className="absolute inset-0 bg-[#0d1a0d] -z-20"></div>
+      {/* Background Atmosphere */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[#0a1a1a] to-black -z-20"></div>
 
-      {/* The 3D Road Container */}
+      {/* The 3D Road - Now anchored at the bottom */}
       <div 
-        className="relative h-[200%] w-full flex justify-center transition-transform duration-300"
+        className="relative flex justify-center transition-transform duration-300"
         style={{ 
-          transform: 'rotateX(25deg) translateY(-20%)',
-          transformStyle: 'preserve-3d'
+          width: `${ROAD_WIDTH}px`,
+          height: '400%', // Very tall road to handle perspective
+          bottom: '0',
+          transform: `rotateX(55deg) scale(${horizontalScale})`,
+          transformStyle: 'preserve-3d',
+          transformOrigin: 'bottom center'
         }}
       >
         <div 
-          className="relative h-full bg-[#1a1a1a] border-x-8 border-gray-700 shadow-[0_0_100px_rgba(0,0,0,0.9)]"
-          style={{ width: `${ROAD_WIDTH}px` }}
+          className="relative w-full h-full bg-[#111] border-x-8 border-gray-800 shadow-[0_0_150px_rgba(0,0,0,1)]"
         >
           {/* Lane Markings */}
           {Array.from({ length: LANES + 1 }).map((_, i) => (
@@ -44,87 +74,88 @@ const RacingScene: React.FC<RacingSceneProps> = ({ players, trackLength, nitroAc
             />
           ))}
 
-          {/* Scrolling Center Lines */}
+          {/* Scrolling Center Lines (Visual feedback of speed) */}
           <div 
-            className="absolute inset-0 opacity-10 pointer-events-none"
+            className="absolute inset-0 opacity-20 pointer-events-none"
             style={{ 
               backgroundImage: `linear-gradient(to bottom, #fff 40px, transparent 40px)`,
-              backgroundSize: `4px 160px`,
+              backgroundSize: `4px 200px`,
               backgroundRepeat: 'repeat-y',
-              backgroundPositionY: `${(currentPos * SCALE) % 160}px`,
+              backgroundPositionY: `${(currentPos * SCALE_Y) % 200}px`,
               left: '50%',
               transform: 'translateX(-50%)'
             }}
           />
 
-          {/* Goal Line Indicator */}
+          {/* Finish Line */}
           <div 
-            className="absolute left-0 right-0 h-20 bg-gradient-to-t from-red-600/40 to-transparent border-t-8 border-red-500 flex items-center justify-center"
-            style={{ top: `calc(70% - ${(trackLength - currentPos) * SCALE}px)` }}
+            className="absolute left-0 right-0 h-40 bg-gradient-to-t from-red-600/40 to-transparent border-t-[16px] border-red-500 flex items-center justify-center"
+            style={{ bottom: `${(trackLength - currentPos) * SCALE_Y + PLAYER_BOTTOM_PX}px` }}
           >
-             <span className="orbitron font-black text-white text-4xl opacity-50">FINISH</span>
+             <span className="orbitron font-black text-white text-7xl md:text-9xl opacity-40 tracking-widest italic">FINISH</span>
           </div>
 
           {/* Cars Layer */}
           <div className="relative w-full h-full" style={{ transformStyle: 'preserve-3d' }}>
             {players.map((player) => {
               const relativePos = player.position - currentPos;
-              const yOffset = relativePos * SCALE;
-              const topPos = `calc(70% - ${yOffset}px)`;
+              const yOffsetFromPlayer = relativePos * SCALE_Y;
+              // Positioning from bottom of the road based on player's fixed bottom position
+              const bottomPos = PLAYER_BOTTOM_PX + yOffsetFromPlayer;
               
-              // Lane is assigned fixed in finalizePlayers
               const xPos = player.lane * LANE_WIDTH + LANE_WIDTH / 2;
 
               return (
                 <div 
                   key={player.id}
-                  className="absolute transition-all duration-[50ms] ease-linear flex flex-col items-center z-10"
+                  className="absolute transition-all duration-[60ms] ease-linear flex flex-col items-center z-10"
                   style={{
-                    top: topPos,
+                    bottom: `${bottomPos}px`,
                     left: `${xPos}px`,
-                    transform: 'translateX(-50%) translateY(-50%) translateZ(10px)',
+                    transform: 'translateX(-50%) translateY(50%) translateZ(25px)',
+                    // Optimize rendering: hide cars that are too far behind or ahead
+                    opacity: relativePos < -50 ? 0 : 1,
+                    visibility: relativePos < -50 ? 'hidden' : 'visible'
                   }}
                 >
                   {/* Name Tag */}
-                  <div className={`mb-3 px-2 py-0.5 rounded-md text-[10px] font-bold orbitron whitespace-nowrap shadow-lg ${
-                    player.isLocal ? 'bg-cyan-500 text-black animate-pulse' : 'bg-black/80 text-white/80'
+                  <div className={`mb-3 px-2 py-0.5 rounded text-[10px] md:text-sm font-bold orbitron whitespace-nowrap shadow-xl border ${
+                    player.isLocal 
+                      ? 'bg-cyan-500 text-black animate-pulse border-white/50 scale-125' 
+                      : 'bg-black/90 text-white/70 border-white/10'
                   }`}>
                     {player.name}
                   </div>
 
-                  {/* 3D Car Model (CSS representation) */}
-                  <div className="relative w-10 h-16 flex items-center justify-center">
+                  {/* Car Body */}
+                  <div className="relative w-10 md:w-14 h-16 md:h-24 flex items-center justify-center">
                      <div 
-                      className="w-full h-full rounded-md relative shadow-[0_15px_25px_rgba(0,0,0,0.5)] transition-transform"
+                      className="w-full h-full rounded-lg relative shadow-[0_20px_40px_rgba(0,0,0,0.8)]"
                       style={{ 
                         backgroundColor: player.color,
-                        transform: `scale(${player.isLocal ? 1.2 : 1})`
+                        transform: `scale(${player.isLocal ? 1.4 : 1})`,
+                        border: '2px solid rgba(255,255,255,0.1)'
                       }}
                      >
-                       {/* Cockpit / Glass */}
-                       <div className="absolute top-1/4 left-2 right-2 h-1/3 bg-slate-900/90 rounded-sm border border-white/10"></div>
-                       
-                       {/* Spoiler */}
-                       <div className="absolute -bottom-2 left-0 right-0 h-3 bg-black/90 rounded-sm border-t border-white/20"></div>
-                       
-                       {/* Aero Vents */}
-                       <div className="absolute top-1 left-2 w-1 h-3 bg-black/20 rounded-full"></div>
-                       <div className="absolute top-1 right-2 w-1 h-3 bg-black/20 rounded-full"></div>
+                       {/* Glass/Cockpit */}
+                       <div className="absolute top-[15%] left-[10%] right-[10%] h-[40%] bg-slate-900/90 rounded-md"></div>
+                       {/* Rear Wing */}
+                       <div className="absolute -bottom-2 left-[-10%] right-[-10%] h-4 bg-black/90 rounded shadow-md"></div>
+                       {/* Wheels */}
+                       <div className="absolute -left-2 top-4 w-3 h-5 bg-zinc-900 rounded-sm"></div>
+                       <div className="absolute -right-2 top-4 w-3 h-5 bg-zinc-900 rounded-sm"></div>
+                       <div className="absolute -left-2 bottom-4 w-3 h-5 bg-zinc-900 rounded-sm"></div>
+                       <div className="absolute -right-2 bottom-4 w-3 h-5 bg-zinc-900 rounded-sm"></div>
 
-                       {/* Wheels with rotation effect */}
-                       <div className="absolute -left-2 top-3 w-2.5 h-4 bg-zinc-900 rounded-sm shadow-inner"></div>
-                       <div className="absolute -right-2 top-3 w-2.5 h-4 bg-zinc-900 rounded-sm shadow-inner"></div>
-                       <div className="absolute -left-2 bottom-3 w-2.5 h-4 bg-zinc-900 rounded-sm shadow-inner"></div>
-                       <div className="absolute -right-2 bottom-3 w-2.5 h-4 bg-zinc-900 rounded-sm shadow-inner"></div>
-
-                       {/* Exhaust / Nitro */}
+                       {/* Nitro Visuals */}
                        {(player.isLocal && nitroActive) && (
-                         <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center">
-                           <div className="w-4 h-12 bg-gradient-to-t from-transparent via-cyan-400 to-white blur-[4px] animate-pulse"></div>
+                         <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 flex flex-col items-center">
+                           <div className="w-5 h-20 bg-gradient-to-t from-transparent via-cyan-400 to-white blur-[6px] animate-pulse"></div>
+                           <div className="w-2 h-12 bg-white absolute top-2 blur-[1px]"></div>
                          </div>
                        )}
-                       {player.speed > 100 && (
-                          <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-2 h-6 bg-orange-500/40 blur-[2px] animate-bounce"></div>
+                       {!player.isLocal && player.speed > 110 && (
+                         <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-4 h-10 bg-orange-500/20 blur-[4px] animate-bounce"></div>
                        )}
                      </div>
                   </div>
@@ -135,19 +166,20 @@ const RacingScene: React.FC<RacingSceneProps> = ({ players, trackLength, nitroAc
         </div>
       </div>
 
-      {/* HUD Speed Lines Overlay */}
+      {/* Speed Lines Overlay */}
       {nitroActive && (
-        <div className="absolute inset-0 pointer-events-none overflow-hidden z-20">
-          <div className="absolute inset-0 bg-cyan-400/5 animate-pulse"></div>
-          {Array.from({ length: 20 }).map((_, i) => (
+        <div className="absolute inset-0 pointer-events-none z-50">
+          <div className="absolute inset-0 bg-cyan-400/5"></div>
+          {Array.from({ length: 12 }).map((_, i) => (
             <div 
               key={i}
-              className="absolute w-px h-32 bg-white/20 animate-speed-line"
+              className="absolute w-px bg-white/30 animate-speed-line"
               style={{
                 left: `${Math.random() * 100}%`,
-                top: `-100px`,
-                animationDelay: `${Math.random() * 2}s`,
-                animationDuration: `${0.2 + Math.random() * 0.3}s`
+                height: `${50 + Math.random() * 100}px`,
+                top: `-200px`,
+                animationDelay: `${Math.random() * 1}s`,
+                animationDuration: `${0.1 + Math.random() * 0.2}s`
               }}
             ></div>
           ))}
