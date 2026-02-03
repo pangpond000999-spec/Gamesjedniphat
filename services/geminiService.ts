@@ -2,7 +2,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Question } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY'AIzaSyAKZG2968cpUIFR9bOOjqr9YCfuD87rgcE' });
 
 const LOCAL_QUESTION_BANK: Question[] = [
   { id: 'l1', text: 'ถ้า A = {1, 2, 3, 4} และ B = {3, 4, 5, 6} แล้ว A ∩ B คือข้อใด?', options: ['{3, 4}', '{1, 2, 5, 6}', '{1, 2, 3, 4, 5, 6}'], correctIndex: 0 },
