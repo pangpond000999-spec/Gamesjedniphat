@@ -9,41 +9,47 @@ interface LobbyProps {
 
 const Lobby: React.FC<LobbyProps> = ({ playerName, setPlayerName, onStart }) => {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-900 via-blue-950 to-black p-6">
-      <div className="text-center mb-10 md:mb-14">
-        <h1 className="text-5xl md:text-8xl font-black orbitron tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600 drop-shadow-[0_0_15px_rgba(34,211,238,0.5)] leading-tight">
-          SET RACER
-        </h1>
-        <p className="text-sm md:text-2xl mt-2 font-light tracking-[0.3em] text-cyan-300/80 orbitron uppercase">
-          Online Math Drag Race
-        </p>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-6 overflow-hidden relative">
+      
+      {/* Cartoon Background Elements */}
+      <div className="absolute top-10 left-10 w-32 h-32 bg-white/20 rounded-full blur-2xl animate-pulse"></div>
+      <div className="absolute bottom-20 right-20 w-64 h-64 bg-yellow-300/30 rounded-full blur-3xl"></div>
+
+      <div className="text-center mb-8 relative z-10">
+        <div className="bg-white/90 px-8 py-4 rounded-[3rem] shadow-[0_10px_0_rgba(0,0,0,0.1)] border-4 border-white transform -rotate-2 mb-6 inline-block">
+          <h1 className="text-3xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 drop-shadow-sm leading-tight font-kanit">
+            เกมแข่งรถ คณิตศาสตร์
+          </h1>
+        </div>
+        <br />
+        <h2 className="text-4xl md:text-7xl font-black text-white drop-shadow-[0_4px_0_rgba(0,0,0,0.2)] tracking-wider font-kanit">
+          เรื่อง เซต
+        </h2>
+        <div className="mt-4 bg-black/20 inline-block px-6 py-2 rounded-full backdrop-blur-sm">
+           <p className="text-lg md:text-2xl text-white font-bold font-kanit">
+             โดย เจตนิพัทธ์ ชัยพฤกษ์
+           </p>
+        </div>
       </div>
 
-      <div className="bg-white/5 backdrop-blur-2xl p-6 md:p-8 rounded-3xl border border-white/10 w-full max-w-sm md:max-w-md shadow-2xl">
-        <label className="block text-[10px] font-bold mb-3 text-cyan-400 orbitron uppercase tracking-[0.2em]">Driver Identity</label>
+      <div className="bg-white p-8 rounded-[2.5rem] shadow-[0_20px_60px_rgba(0,0,0,0.3)] w-full max-w-sm md:max-w-md relative z-10 border-b-8 border-gray-200">
+        <label className="block text-sm font-black mb-3 text-slate-500 font-kanit uppercase tracking-wider pl-2">ชื่อนักแข่ง</label>
         <input
           type="text"
           value={playerName}
           onChange={(e) => setPlayerName(e.target.value)}
-          placeholder="ENTER NAME"
+          placeholder="พิมพ์ชื่อของคุณ..."
           maxLength={15}
-          className="w-full bg-black/40 border border-white/20 rounded-xl px-4 py-4 text-lg md:text-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 mb-6 transition-all text-white font-bold orbitron placeholder:text-white/20"
+          className="w-full bg-slate-100 border-2 border-slate-200 rounded-2xl px-5 py-4 text-xl md:text-2xl focus:outline-none focus:ring-4 focus:ring-purple-400 focus:border-purple-400 mb-6 transition-all text-slate-700 font-bold font-kanit placeholder:text-slate-400"
         />
         
         <button
           onClick={onStart}
-          className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold py-4 md:py-5 rounded-xl text-lg md:text-xl orbitron transform hover:scale-[1.02] transition-all shadow-lg active:scale-95 flex items-center justify-center gap-3"
+          className="w-full bg-gradient-to-b from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-white font-black py-5 rounded-2xl text-2xl font-kanit transform hover:-translate-y-1 hover:shadow-[0_10px_20px_rgba(245,158,11,0.4)] transition-all shadow-[0_5px_0_#d97706] active:translate-y-0 active:shadow-none flex items-center justify-center gap-3 border-b-4 border-orange-600"
         >
-          <span>JOIN RACE</span>
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path></svg>
+          <span>เริ่มเกม!</span>
+          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
         </button>
-
-        <div className="mt-8 space-y-2 text-[10px] md:text-xs text-gray-400 border-t border-white/10 pt-6">
-          <p className="flex items-center gap-2"><span className="w-1 h-1 bg-cyan-500 rounded-full shadow-[0_0_5px_cyan]"></span> 15 Multi-lane Racing Protocol</p>
-          <p className="flex items-center gap-2"><span className="w-1 h-1 bg-blue-500 rounded-full"></span> 30s Strategic Matchmaking</p>
-          <p className="flex items-center gap-2"><span className="w-1 h-1 bg-purple-500 rounded-full"></span> Real-time Logic Decryption</p>
-          <p className="flex items-center gap-2"><span className="w-1 h-1 bg-pink-500 rounded-full"></span> Thai High School Set Theory</p>
-        </div>
       </div>
     </div>
   );

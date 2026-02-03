@@ -34,34 +34,34 @@ const GameView: React.FC<GameViewProps> = ({
   }, [localPlayer?.speed]);
 
   return (
-    <div className="flex flex-col w-full h-screen bg-black overflow-hidden select-none">
+    <div className="flex flex-col w-full h-screen bg-slate-50 overflow-hidden select-none font-kanit">
       
-      {/* TOP SECTION: Racing View (45% of screen on mobile) */}
-      <div className="relative h-[45vh] md:h-[50vh] border-b border-cyan-500/30 overflow-hidden shadow-[inset_0_-20px_50px_rgba(0,0,0,0.95)]">
+      {/* TOP SECTION: Racing View */}
+      <div className="relative h-[45vh] md:h-[50vh] border-b-4 border-slate-200 overflow-hidden shadow-lg z-10">
         <RacingScene players={players} trackLength={trackLength} nitroActive={showNitro} />
         
-        {/* Compact HUD for mobile */}
-        <div className="absolute top-3 left-3 flex flex-col gap-1.5 pointer-events-none z-30">
-          <div className="flex items-center gap-2 bg-black/80 backdrop-blur-md px-2 py-1 rounded border border-white/10 shadow-lg">
-             <div className="text-[7px] text-cyan-400 orbitron font-bold">TIME</div>
-             <div className="text-sm md:text-xl font-black orbitron tabular-nums text-white">
+        {/* HUD Layer - Modern Cards */}
+        <div className="absolute top-3 left-3 flex flex-col gap-2 pointer-events-none z-30">
+          <div className="flex items-center gap-2 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-2xl shadow-lg border-2 border-slate-100">
+             <div className="text-[10px] text-slate-500 font-black">เวลา</div>
+             <div className="text-xl md:text-2xl font-black tabular-nums text-slate-800">
                {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
              </div>
           </div>
           
-          <div className="flex items-center gap-2 bg-black/80 backdrop-blur-md px-2 py-1 rounded border border-white/10 shadow-lg">
-             <div className="text-[7px] text-pink-500 orbitron font-bold">KM/H</div>
-             <div className="text-sm md:text-xl font-black orbitron tabular-nums text-pink-400">
-               {Math.floor(localPlayer?.speed || 0)}
+          <div className="flex items-center gap-2 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-2xl shadow-lg border-2 border-slate-100">
+             <div className="text-[10px] text-purple-500 font-black">ความเร็ว</div>
+             <div className="text-xl md:text-2xl font-black tabular-nums text-purple-600">
+               {Math.floor(localPlayer?.speed || 0)} <span className="text-xs text-slate-400">KM/H</span>
              </div>
           </div>
         </div>
 
         {/* Rank Position */}
         <div className="absolute top-3 right-3 z-30 pointer-events-none">
-           <div className="bg-cyan-500/30 backdrop-blur-md border border-cyan-500/50 px-2 py-1 rounded flex items-baseline gap-1.5">
-              <span className="text-[7px] text-cyan-300 orbitron font-bold">POS</span>
-              <span className="text-lg md:text-2xl font-black orbitron italic text-white">
+           <div className="bg-yellow-400/90 backdrop-blur-md border-4 border-white px-4 py-2 rounded-2xl shadow-xl flex items-baseline gap-2 transform rotate-1">
+              <span className="text-[10px] text-yellow-900 font-black">อันดับ</span>
+              <span className="text-2xl md:text-4xl font-black italic text-white drop-shadow-md">
                 {[...players].sort((a, b) => b.position - a.position).findIndex(p => p.isLocal) + 1}
               </span>
            </div>
@@ -71,38 +71,39 @@ const GameView: React.FC<GameViewProps> = ({
 
         {showNitro && (
           <div className="absolute inset-x-0 bottom-4 flex justify-center pointer-events-none z-40">
-            <div className="text-2xl font-black orbitron italic text-cyan-400 animate-pulse drop-shadow-[0_0_10px_rgba(34,211,238,0.8)]">
-              NITRO BOOST
+            <div className="text-3xl md:text-5xl font-black italic text-yellow-400 stroke-text animate-bounce drop-shadow-xl">
+              NITRO!
             </div>
+            <style>{`.stroke-text { -webkit-text-stroke: 2px white; }`}</style>
           </div>
         )}
       </div>
 
-      {/* BOTTOM SECTION: Math Quiz Terminal (55% of screen on mobile) */}
-      <div className="h-[55vh] md:h-[50vh] relative bg-[#020205] p-3 md:p-8 overflow-y-auto flex flex-col">
+      {/* BOTTOM SECTION: Quiz Area - Clean & Friendly */}
+      <div className="h-[55vh] md:h-[50vh] relative bg-white p-3 md:p-6 overflow-y-auto flex flex-col">
         <div className="max-w-4xl mx-auto w-full flex-1 flex flex-col">
           
-          {/* Subtle Race Progress */}
-          <div className="w-full h-1 bg-white/10 rounded-full mb-4 overflow-hidden">
+          {/* Progress Bar */}
+          <div className="w-full h-3 bg-slate-100 rounded-full mb-4 overflow-hidden border border-slate-200">
              <div 
-              className="h-full bg-gradient-to-r from-cyan-500 to-blue-600 transition-all duration-300" 
+              className="h-full bg-gradient-to-r from-blue-400 to-purple-500 transition-all duration-300 rounded-full" 
               style={{ width: `${progress}%` }}
              ></div>
           </div>
 
           {currentQuestion ? (
             <div className="flex flex-col flex-1">
-              <div className="flex justify-between items-center mb-2 px-1">
-                <span className="text-[8px] orbitron text-cyan-500/60 font-black uppercase tracking-[0.2em]">Logic Decryptor v3.1</span>
-                <div className={`px-2 py-0.5 rounded font-bold orbitron text-[10px] md:text-base border ${
-                  questionTimer < 5 ? 'bg-red-500/20 border-red-500 text-red-500 animate-pulse' : 'bg-white/5 border-white/10 text-cyan-400'
+              <div className="flex justify-between items-center mb-2 px-2">
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">คำถาม</span>
+                <div className={`px-3 py-1 rounded-lg font-bold text-sm md:text-lg border-2 ${
+                  questionTimer < 5 ? 'bg-red-50 border-red-200 text-red-500 animate-pulse' : 'bg-blue-50 border-blue-100 text-blue-500'
                 }`}>
-                  {questionTimer}s
+                  เวลา: {questionTimer}s
                 </div>
               </div>
 
-              <div className="bg-white/5 border border-white/10 rounded-xl p-4 md:p-10 mb-3 md:mb-6 flex items-center justify-center min-h-[70px] md:min-h-[140px] shadow-inner">
-                <h2 className="text-sm md:text-2xl font-bold text-center text-white leading-relaxed">
+              <div className="bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 md:p-8 mb-3 md:mb-6 flex items-center justify-center min-h-[80px] md:min-h-[140px] shadow-sm">
+                <h2 className="text-base md:text-2xl font-bold text-center text-slate-700 leading-relaxed">
                   {currentQuestion.text}
                 </h2>
               </div>
@@ -112,18 +113,17 @@ const GameView: React.FC<GameViewProps> = ({
                   <button
                     key={idx}
                     onClick={() => onAnswer(idx)}
-                    className="group relative h-11 md:h-16 bg-white/5 hover:bg-cyan-500/10 border border-white/10 hover:border-cyan-500/50 rounded-lg p-2 transition-all active:scale-[0.98] flex items-center justify-center overflow-hidden"
+                    className="group relative h-12 md:h-16 bg-white hover:bg-purple-50 border-2 border-slate-200 hover:border-purple-300 rounded-xl p-2 transition-all active:scale-[0.98] active:bg-purple-100 flex items-center justify-center overflow-hidden shadow-sm hover:shadow-md"
                   >
-                    <span className="text-xs md:text-lg font-bold text-white group-hover:text-cyan-400 transition-colors">{option}</span>
-                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-cyan-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <span className="text-sm md:text-xl font-bold text-slate-600 group-hover:text-purple-600 transition-colors">{option}</span>
                   </button>
                 ))}
               </div>
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center flex-1">
-               <div className="w-10 h-10 border-2 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin mb-4"></div>
-               <p className="orbitron text-[9px] text-cyan-500 tracking-[0.4em] animate-pulse">CONNECTING TO GRID...</p>
+               <div className="w-12 h-12 border-4 border-slate-200 border-t-purple-500 rounded-full animate-spin mb-4"></div>
+               <p className="font-bold text-slate-400">กำลังโหลดคำถาม...</p>
             </div>
           )}
         </div>
